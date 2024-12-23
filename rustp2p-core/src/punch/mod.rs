@@ -213,10 +213,6 @@ impl<PeerID: Hash + Eq + Clone> Puncher<PeerID> {
                 .collect();
             udp_pipe_writer.try_main_send_to_addr(buf, &mapping_udp_v6_addr);
         }
-        let local_ipv4_addrs = peer_nat_info.local_ipv4_addrs();
-        if !local_ipv4_addrs.is_empty() {
-            udp_pipe_writer.try_main_send_to_addr(buf, &local_ipv4_addrs);
-        }
 
         if punch_model.is_match(PunchModel::IPv6Udp) {
             let v6_addr = peer_nat_info.ipv6_addr();
