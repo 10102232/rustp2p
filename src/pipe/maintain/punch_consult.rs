@@ -74,28 +74,34 @@ pub async fn punch_loop(
 ) {
     #[cfg(feature = "use-tokio")]
     while let Some((node_id, info)) = receiver.recv().await {
+        let filtered_nat_info = info.peer_nat_info.filter_private_ips();
         let punch_info = PunchInfo::new(
-            active,
             info.peer_punch_model & pipe_writer.pipe_context().punch_model_box(),
-            info.peer_nat_info,
+            filtered_nat_info,
         );
         if let Ok(packet) = pipe_writer.allocate_send_packet_proto(ProtocolType::PunchRequest, 0) {
-            if let Err(e) = puncher.punch(node_id, packet.buf(), punch_info).await {
-                log::warn!("punch {e:?} {node_id:?}");
+            match puncher.punch(node_id, packet.buf(), punch_info).await {
+                Ok(_) => log::info!("Successfully punched {node_id:?}"),
+                Err(e) => log::warn!("Failed to punch {node_id:?}: {e:?}"),
             }
+        } else {
+            log::warn!("Failed to allocate send packet for {node_id:?}");
         }
     }
     #[cfg(feature = "use-async-std")]
     while let Ok((node_id, info)) = receiver.recv().await {
+        let filtered_nat_info = info.peer_nat_info.filter_private_ips();
         let punch_info = PunchInfo::new(
-            active,
             info.peer_punch_model & pipe_writer.pipe_context().punch_model_box(),
-            info.peer_nat_info,
+            filtered_nat_info,
         );
         if let Ok(packet) = pipe_writer.allocate_send_packet_proto(ProtocolType::PunchRequest, 0) {
-            if let Err(e) = puncher.punch(node_id, packet.buf(), punch_info).await {
-                log::warn!("punch {e:?} {node_id:?}");
+            match puncher.punch(node_id, packet.buf(), punch_info).await {
+                Ok(_) => log::info!("Successfully punched {node_id:?}"),
+                Err(e) => log::warn!("Failed to punch {node_id:?}: {e:?}"),
             }
+        } else {
+            log::warn!("Failed to allocate send packet for {node_id:?}");
         }
     }
 }
