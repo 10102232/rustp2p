@@ -124,10 +124,14 @@ impl PipeContext {
         addrs
     }
     pub fn get_direct_node_id(&self, id: &u16) -> Option<(GroupCode, NodeID)> {
-        self.direct_node_id_map
-            .get(id)
-            .map(|v| (v.value().0, v.value().1))
+        self.direct_node_id_map.get(id).map(|v| (v.0, v.1))
     }
+
+    pub async fn update_direct_nodes(&self) -> crate::error::Result<()> {
+        // 更新直接节点的逻辑
+        Ok(())
+    }
+
     pub async fn update_direct_nodes(&self) -> crate::error::Result<()> {
         let mut addrs = self.direct_node_address_list.read().clone();
         for (peer_addr, _id, addr) in &mut addrs {
