@@ -123,39 +123,16 @@ impl PunchConsultInfo {
 
 #[derive(Clone, Debug)]
 pub struct PunchInfo {
-    pub(crate) initiate_by_oneself: bool,
-    pub(crate) punch_model: PunchModelBoxes,
-    pub(crate) peer_nat_info: NatInfo,
+    pub peer_punch_model: PunchModel,
+    pub peer_nat_info: NatInfo,
 }
 
 impl PunchInfo {
-    pub fn new(
-        initiate_by_oneself: bool,
-        punch_model: PunchModelBoxes,
-        peer_nat_info: NatInfo,
-    ) -> Self {
+    pub fn new(peer_punch_model: PunchModel, peer_nat_info: NatInfo) -> Self {
         Self {
-            initiate_by_oneself,
-            punch_model,
+            peer_punch_model,
             peer_nat_info,
         }
-    }
-    pub fn new_by_oneself(punch_model: PunchModelBoxes, peer_nat_info: NatInfo) -> Self {
-        Self {
-            initiate_by_oneself: true,
-            punch_model,
-            peer_nat_info,
-        }
-    }
-    pub fn new_by_other(punch_model: PunchModelBoxes, peer_nat_info: NatInfo) -> Self {
-        Self {
-            initiate_by_oneself: false,
-            punch_model,
-            peer_nat_info,
-        }
-    }
-    pub(crate) fn use_ttl(&self) -> bool {
-        self.initiate_by_oneself ^ (self.peer_nat_info.seq % 2 == 0)
     }
 }
 
@@ -173,5 +150,13 @@ impl FromStr for PunchModel {
                 s
             )),
         }
+    }
+}
+
+impl NatInfo {
+    pub fn filter_private_ips(&self) -> Self {
+        // 假设 NatInfo 是一个包含 IP 地址的结构体
+        // 这里实现过滤逻辑，移除内网 IP
+        self.filter(|ip| !ip.is_private())
     }
 }
